@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Activity Timer</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      text-align: center;
+    }
+    #timerDisplay {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      padding: 10px;
+      font-size: 18px;
+    }
+    .active {
+      font-weight: bold;
+      color: green;
+    }
+    .arrow {
+      display: inline-block;
+      width: 20px;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Activity Timer</h1>
+  <div id="timerDisplay">00:00:00</div>
+  <ul id="activityList"></ul>
+
+  <div>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="stopTimer()">Stop</button>
+  </div>
+
+  <script>
+    const activityDict = {
+      "Study": 2,
+      "Break": 1,
+      "Workout": 1
+    };
+
+    const intervalMinutes = 20;
+    const activityTimeline = [];
+
+    for (let [activity, count] of Object.entries(activityDict)) {
+      for (let i = 0; i < count; i++) {
+        activityTimeline.push(activity);
+      }
+    }
+
+    const listElement = document.getElementById("activityList");
+    const timerDisplay = document.getElementById("timerDisplay");
+    let currentStep = 0;
+    let timer = null;
+    let secondsPassed = 0;
+    const secondsPerStep = intervalMinutes * 60;
+
+    function formatTime(seconds) {
+      const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
+    function renderList() {
+      listElement.innerHTML = "";
+      activityTimeline.forEach((activity, index) => {
+        const li = document.createElement("li");
+        li.className = index === currentStep ? "active" : "";
+        li.innerHTML = `${index === currentStep ? '→' : '<span class="arrow"></span>'} ${activity}`;
+        listElement.appendChild(li);
+      });
+    }
+
+    function updateTimerDisplay() {
+      timerDisplay.textContent = formatTime(secondsPassed);
+    }
+
+    function startTimer() {
+      if (timer) return;
+      timer = setInterval(() => {
+        secondsPassed++;
+        updateTimerDisplay();
+        if (secondsPassed >= secondsPerStep) {
+          secondsPassed = 0;
+          currentStep++;
+          if (currentStep >= activityTimeline.length) {
+            stopTimer();
+            alert("All activities done!");
+            return;
+          }
+          renderList();
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timer);
+      timer = null;
+    }
+
+    renderList();
+    updateTimerDisplay();
+  </script>
+</body>
+</html>
